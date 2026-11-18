@@ -1,0 +1,35 @@
+
+services:
+  department-backend1:
+    image: ghcr.io/haibtrikkei/department-backend1:latest
+    container_name: department-backend1
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://department-db:5432/department_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 1234$
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    depends_on:
+      department-db:
+        condition: service_healthy
+
+  department-db:
+    image: postgres:17-alpine
+    container_name: department-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234$
+      POSTGRES_DB: department_db
+    volumes:
+      - department-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d department_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  department-db-data:
